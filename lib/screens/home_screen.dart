@@ -21,6 +21,21 @@ class HomeScreen extends StatelessWidget {
     ));
   }
 
+    Future<void> _showBottom(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        height: 600,
+        width: MediaQuery.of(context)
+            .size
+            .width, // toma todo el ancho disponible de la pantalla
+        color: Colors.white,
+        child: const RecipeForm(),
+      ),
+    );
+  }
+}
+
   Widget _recipesCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -74,27 +89,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showBottom(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        height: 500,
-        width: MediaQuery.of(context)
-            .size
-            .width, // toma todo el ancho disponible de la pantalla
-        color: Colors.white,
-        child: RecipeForm(),
-      ),
-    );
-  }
-}
 
+
+//Formulario para crear la receta
 class RecipeForm extends StatelessWidget {
   const RecipeForm({super.key});
 
   @override
   Widget build(BuildContext context) {
-    var formKey = GlobalKey<FormState>(); // almacena el estado del formulario
+    var formKey = GlobalKey<FormState>(); // almacena el estado del formulario en una key
 
     // Es necesario declarar un controlador para cada uno de los campo del formulario
     //capturando lo ingresado en cada input y guardandolo en el estado
@@ -166,12 +169,18 @@ class RecipeForm extends StatelessWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[400],
+                  backgroundColor: Colors.orange[400],
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text('Add Recipe'),
+                child: Text(
+                  'Add Recipe',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                ),
               ),
             )
           ],
@@ -179,31 +188,35 @@ class RecipeForm extends StatelessWidget {
       ),
     );
   }
+
+  // Construcción personalizada de los campos de texto (input)
+  // maxLines se usas para incrementar la cantidad de lineas que puede recibir un input
+  Widget _buildTextField(
+      //parametros requeridos por la funcion
+      {required String label,
+      required TextEditingController controller,
+      required String? Function(dynamic value) validator,
+      int? maxLines = 1}) {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(
+          color: Colors.orange,
+          fontFamily: 'Quicksand',
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.orange, width: 1),
+        ),
+      ),
+      // se deben asignar los controladores y validadores a cada input
+      validator: validator,
+      maxLines: maxLines,
+    );
+  }
 }
 
-// Construcción personalizada de los campos de texto (input)
-Widget _buildTextField(
-    //parametros requeridos por la funcion
-    {required String label,
-    required TextEditingController controller,
-    required String? Function(dynamic value) validator,
-    int? maxLines = 1}) {
-  return TextFormField(
-    decoration: InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(
-        color: Colors.orange,
-        fontFamily: 'Quicksand',
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: Colors.orange, width: 1),
-      ),
-    ),
-    validator: validator,
-    maxLines: maxLines,
-  );
-}
+
