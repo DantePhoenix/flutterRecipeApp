@@ -1,27 +1,77 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:recetas_app/screens/recipe_detail.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+//Crear la conexion a la Api de moockon
+  Future<List<dynamic>> _fetchRecipes() async {
+    //Url que apunta a la api cre cree en moockon
+    final url = Uri.parse('http://10.0.2.2:54093/recipes');
+    // VALIDACIONES DE ERRORES
+    try {
+      final response = await http.get(url); //Se hace la petición get a la url
+      // si la respuesta es un 200
+      if (response.statusCode == 200) {
+        // decodificar la respuesta a un formato Json y solo entregar el body
+        final data = json.decode(response.body);
+        // apuntar al objeto que contiene todo lo demás (primero pasar por recipes para luego obtener los demás objetos
+        return data['recipes'];
+      } else {
+        // ignore: avoid_print
+        print('Error:  ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error in request');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      children: <Widget>[
-        _recipesCard(context),
-        _recipesCard(context),
-        FloatingActionButton(
-          onPressed: () {
-            _showBottom(context);
-          },
-          backgroundColor: Colors.orange[400],
-          child: Icon(Icons.add, color: Colors.white),
-        ),
-      ],
-    ));
+      body: FutureBuilder(
+          future: _fetchRecipes(), // Trae la respuesta de la api
+          builder: (context, snapshot) {
+            final recipes = snapshot.data ?? []; // sino hay datos pone vacio
+            // VALIDACIONES DE ERRORES
+            // Si tarda en cargar las imagenes
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: CircularProgressIndicator(
+                color: Colors.white70,
+                backgroundColor: Colors.orange,
+              ));
+            } else if
+                //Si los datos llegan vacíos
+                (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text('No recipes found'));
+            } else {
+              // Si todo esta correcto
+              return ListView.builder(
+                  itemCount: recipes
+                      .length, // cuenta la cantidad de datos de respuesta
+                  itemBuilder: (BuildContext context, int index) {
+                    return _recipesCard(context, recipes[index]);
+                  });
+            }
+          }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showBottom(context);
+        },
+        backgroundColor: Colors.orange[400],
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+    );
   }
 
-    Future<void> _showBottom(BuildContext context) {
+  Future<void> _showBottom(BuildContext context) {
     return showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -36,8 +86,17 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-  Widget _recipesCard(BuildContext context) {
-    return Padding(
+Widget _recipesCard(BuildContext context, dynamic recipe) {
+  // gesture detector detecta las interacciones en la pantalla
+  return GestureDetector(
+    onTap: () {
+      // Navegación a otra pantalla definida con materialPageRouter
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => RecipeDetail(recipeName: recipe['name'])));
+    },
+    child: Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
@@ -50,8 +109,8 @@ class HomeScreen extends StatelessWidget {
                 width: 100,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    'assets/images/lasagna.jpg',
+                  child: Image.network(
+                    recipe['image_link'],
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -64,7 +123,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Lasagna',
+                    recipe['name'],
                     style: TextStyle(fontSize: 16, fontFamily: 'Quicksand'),
                   ),
                   SizedBox(
@@ -75,7 +134,7 @@ class HomeScreen extends StatelessWidget {
                     width: 75,
                     color: Colors.orange,
                   ),
-                  Text('Alison J',
+                  Text(recipe['author'],
                       style: TextStyle(fontSize: 16, fontFamily: 'Quicksand')),
                   SizedBox(
                     height: 4,
@@ -86,10 +145,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-
+    ),
+  );
+}
 
 //Formulario para crear la receta
 class RecipeForm extends StatelessWidget {
@@ -97,7 +155,8 @@ class RecipeForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var formKey = GlobalKey<FormState>(); // almacena el estado del formulario en una key
+    var formKey =
+        GlobalKey<FormState>(); // almacena el estado del formulario en una key
 
     // Es necesario declarar un controlador para cada uno de los campo del formulario
     //capturando lo ingresado en cada input y guardandolo en el estado
@@ -218,5 +277,3 @@ class RecipeForm extends StatelessWidget {
     );
   }
 }
-
-

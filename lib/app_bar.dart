@@ -13,7 +13,11 @@ class RecipeBook extends StatelessWidget {
             backgroundColor: Colors.orange,
             title: Text(
               'Recipe Book',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Quicksand',
+              ),
             ),
             bottom: TabBar(
                 indicatorColor: Colors.white,
