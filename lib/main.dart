@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:recetas_app/app_bar.dart';
+import 'package:recetas_app/providers/recipes_provider.dart';
 
 void main() => runApp(const MyApp());
 
@@ -8,7 +10,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: RecipeBook());
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => RecipesProvider()),
+      ],
+      child: const MaterialApp(
+          debugShowCheckedModeBanner: false, home: RecipeBook()),
+    );
   }
 }
