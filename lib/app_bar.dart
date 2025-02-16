@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recetas_app/screens/details_screen.dart';
 import 'package:recetas_app/screens/home_screen.dart';
 
 class RecipeBook extends StatelessWidget {
@@ -7,7 +8,7 @@ class RecipeBook extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 1,
+      length: 2,
       child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.orange,
@@ -27,10 +28,14 @@ class RecipeBook extends StatelessWidget {
                   Tab(
                     icon: Icon(Icons.home),
                     text: 'Home',
+                  ),
+                  Tab(
+                    icon: Icon(Icons.favorite),
+                    text: 'Favorites',
                   )
                 ]),
           ),
-          body: TabBarView(children: [HomeScreen()])),
+          body: TabBarView(children: [HomeScreen(), FavoritesScreen()])),
     );
   }
 }

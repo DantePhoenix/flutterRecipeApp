@@ -6,6 +6,7 @@ import 'package:recetas_app/models/recipe_model.dart';
 class RecipesProvider extends ChangeNotifier {
   bool isLoading = false;
   List<Recipe> recipes = [];
+  List<Recipe> favoriteRecipes = [];
 
   //Crear la conexion a la Api de moockon
   Future<void> fetchRecipes() async {
@@ -35,6 +36,31 @@ class RecipesProvider extends ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> toggleFavoriteStatus(Recipe recipe) async {
+    final isFavorite = favoriteRecipes.contains(recipe);
+
+    try {
+      final url = Uri.parse('http://10.0.2.2:54093/favorites');
+      final response = isFavorite
+          ? await http.delete(url, body: json.encode({'id': recipe.id}))
+          : await http.post(url, body: json.encode(recipe.toJson()));
+
+      if (response.statusCode == 200) {
+        if (isFavorite) {
+          favoriteRecipes.remove(recipe);
+        } else {
+          favoriteRecipes.add(recipe);
+        }
+        notifyListeners();
+      } else {
+        throw Exception('Failed to update favorite recipe');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error updating favorite recipe: $e');
     }
   }
 }
