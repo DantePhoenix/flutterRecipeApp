@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:recetas_app/models/recipe_model.dart';
@@ -7,6 +8,8 @@ class RecipesProvider extends ChangeNotifier {
   bool isLoading = false;
   List<Recipe> recipes = [];
   List<Recipe> favoriteRecipes = [];
+  // implementando variable de entorno global para la url de la api
+  final apiUrl = dotenv.env['API_URL'];
 
   //Crear la conexion a la Api de moockon
   Future<void> fetchRecipes() async {
@@ -14,7 +17,8 @@ class RecipesProvider extends ChangeNotifier {
     notifyListeners();
 
     //Url que apunta a la api cre cree en moockon
-    final url = Uri.parse('http://10.0.2.2:54093/recipes');
+    // llamandola desde variable de entorno
+    final url = Uri.parse('$apiUrl/recipes');
     // VALIDACIONES DE ERRORES
     try {
       final response = await http.get(url); //Se hace la petición get a la url
@@ -43,7 +47,7 @@ class RecipesProvider extends ChangeNotifier {
     final isFavorite = favoriteRecipes.contains(recipe);
 
     try {
-      final url = Uri.parse('http://10.0.2.2:54093/favorites');
+      final url = Uri.parse('$apiUrl/favorites');
       final response = isFavorite
           ? await http.delete(url, body: json.encode({'id': recipe.id}))
           : await http.post(url, body: json.encode(recipe.toJson()));
